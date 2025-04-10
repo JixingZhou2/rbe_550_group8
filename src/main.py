@@ -34,20 +34,21 @@ def main():
     grid = load_map(f"../maps/{map_name}")
 
     start, goal, obstacles, boxes = find_positions(grid)
-    max_t = 10  # Increase if needed
+    max_t = 50  # Increase if needed
+    for time in range(max_t):
+        solver, RobotAt, BoxAt = encode_sat_plan(grid, start, goal, boxes, obstacles, time)
 
-    solver, RobotAt, BoxAt = encode_sat_plan(grid, start, goal, boxes, obstacles, max_t)
+        result = plan_sat(solver, RobotAt, BoxAt, time, (len(grid), len(grid[0])), len(boxes))
 
-    result = plan_sat(solver, RobotAt, BoxAt, max_t, (len(grid), len(grid[0])), len(boxes))
-
-    if result:
-        robot_path, box_paths = result
-        print("Solution path found!")
-        with open("path.txt", "w") as f:
-            f.write(str(robot_path))
-        visualize_path(grid, robot_path, box_paths=box_paths)
-    else:
-        print("No solution found.")
+        if result:
+            robot_path, box_paths = result
+            print("Solution path found!")
+            with open("path.txt", "w") as f:
+                f.write(str(robot_path))
+            visualize_path(grid, robot_path, box_paths)
+            break
+        else:
+            print(f"No solution found in time {time}.")
 
 if __name__ == "__main__":
     main()
