@@ -1,20 +1,6 @@
 from PIL import Image
 
 def visualize_path(grid, path, box_paths=None, scale=20):
-    """
-    Visualizes the robot path and box motions.
-    Draws:
-      - Robot in red
-      - Boxes in blue
-      - Goal in green
-      - Obstacles in black
-      - Free space in white
-
-    :param grid:       2D list of characters
-    :param path:       List of (r, c) robot positions at each time
-    :param box_paths:  List of box position lists, one per box
-    :param scale:      Image scale
-    """
     grid_copy = [row[:] for row in grid]
     for (r, c) in path:
         if grid_copy[r][c] != '#':
@@ -57,13 +43,18 @@ def visualize_path(grid, path, box_paths=None, scale=20):
     # --- Generate animation frames ---
     frames = []
     num_frames = len(path)
+    
     for t in range(num_frames):
         robot_here = path[t]
+
         box_positions = []
         if box_paths:
             for b_path in box_paths:
-                if t < len(b_path):
-                    box_positions.append(b_path[t])
+                if t == 0:
+                    box_positions.append(b_path[0])  # 第一帧，直接拿初始位置
+                elif t-1 < len(b_path):
+                    box_positions.append(b_path[t-1])  # 之后延迟一帧
+
         img = grid_to_image(grid, robot_here, box_positions)
         frames.append(img)
 
