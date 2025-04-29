@@ -50,11 +50,16 @@ def encode_sat_plan(grid, start, goal, boxes, obstacles, max_t):
 
     num_boxes = len(boxes)
 
-    def any_box_at(t, r, c):
-        if num_boxes == 0:
-            return BoolVal(False) 
-        """∃ b . BoxAt(t,r,c,b)"""
-        return Or([BoxAt[(t, r, c, b)] for b in range(num_boxes)])
+    any_cache = {}
+    def any_box_at(t,r,c):
+        key = (t,r,c)
+        if key not in any_cache:
+            if num_boxes == 0:
+                any_cache[key] = BoolVal(False)
+            else:
+                any_cache[key] = Or([BoxAt[(t,r,c,b)] for b in range(num_boxes)])
+        return any_cache[key]
+
 
 
     # RobotAt and BoxAt
@@ -344,13 +349,16 @@ def encode_sat_plan(grid, start, goal, boxes, obstacles, max_t):
 
                             # 
                             for b2 in range(num_boxes):
-                                if b2 == b:           # 
+                                if b2 == b:      # 跳过当前被推的箱子
                                     continue
                                 for x in range(rows):
                                     for y in range(cols):
-                                        stay = Implies(cond & BoxAt[(t, x, y, b2)],
-                                                       BoxAt[(t + 1, x, y, b2)])
-                                        solver.add(stay)
+                                        # 等价断言：t+1 时刻占用情况 == t 时刻
+                                        solver.add(Implies(
+                                            cond,
+                                            BoxAt[(t + 1, x, y, b2)] ==
+                                            BoxAt[(t,     x, y, b2)]
+                                        ))
 
                     # --------  completeness ----------
                     valid_outcome = Or(no_box_cond, *push_alternatives)
