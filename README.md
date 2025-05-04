@@ -47,7 +47,7 @@ After execution, two visualization outputs will be saved:
 Map files are located in the `maps/` folder. You can change the map by editing the following line in `main.py`:
 
 ```python
-map_name = "scene1.txt"
+default_map = os.path.join(maps_dir, "scene1.txt")
 ```
 
 ## Map Format
