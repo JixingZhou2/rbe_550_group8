@@ -48,11 +48,12 @@ def encode_sat_plan(grid, start, goal, boxes, obstacles, max_t):
 
     # -------- unique --------
     for t in range(max_t + 1):
-        solver.add(PbEq([(RobotAt[(t, r, c)], 1) for r, c in free_cells], 1))          # robot unique
-        for b in range(num_boxes):
-            solver.add(PbEq([(BoxAt[(t, r, c, b)], 1) for r, c in free_cells], 1))     # box unique
-        for r, c in free_cells:                                                        # same cell
-            solver.add(AtMost(*[BoxAt[(t, r, c, b)] for b in range(num_boxes)], 1))
+        solver.add(PbEq([(RobotAt[(t, r, c)], 1) for r, c in free_cells], 1)) 
+        if num_boxes > 0:         # robot unique
+            for b in range(num_boxes):
+                solver.add(PbEq([(BoxAt[(t, r, c, b)], 1) for r, c in free_cells], 1))     # box unique
+            for r, c in free_cells:                                                        # same cell
+                solver.add(AtMost(*[BoxAt[(t, r, c, b)] for b in range(num_boxes)], 1))
 
     solver.add(RobotAt[(0, *start)])
     for r, c in free_cells:
@@ -140,7 +141,8 @@ def encode_sat_plan(grid, start, goal, boxes, obstacles, max_t):
                         clear_between = And(clear_between, Not(blocker_is_box))
                         cx, cy = nx, ny
 
-                push_disj = Or(*[p for b in range(num_boxes) for p in pushed[(t, b)]])
+                push_list = [p for b in range(num_boxes) for p in pushed.get((t, b), [])]
+                push_disj = Or(push_list) if push_list else BoolVal(False)
                 solver.add(Implies(move_here, Or(clear_seq, push_disj)))
 
     for t in range(max_t):

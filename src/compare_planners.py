@@ -85,7 +85,7 @@ def compare_planners(map_file, max_t=20):
     
     # Now run SAT planner
     print("\n===== SAT-Based Planning =====")
-    print("\nPlanner still running, it may take about 10 minutes...\n")
+    print("\nPlanner still running, it may takes about 10 minutes...\n")
     sat_start_time = time.time()
     sat_horizon = -1
     

@@ -37,6 +37,8 @@ This will execute:
 * **SAT-plan using Z3 SMT solver**
 * **BFS-based search planner**
 
+**Z3-sat planner may takes more than 10 minutes in scene2 map if the host CPU performance is poor**
+
 After execution, two visualization outputs will be saved:
 
 * `path_sat.gif`: Path found by the SAT-based planner
