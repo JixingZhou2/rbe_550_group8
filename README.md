@@ -5,6 +5,7 @@ project/
 ├── maps/
 │   ├── scene1.txt
 │   └── scene2.txt
+├── BFS_search_tree_visualization/
 └── src/
     ├── sat_encoding.py  
     ├── sat_planner.py     
@@ -22,6 +23,7 @@ Before running the code, make sure to install the required Python dependency:
 
 ```bash
 pip install z3-solver
+pip install networkx
 ````
 
 ## Running the Code

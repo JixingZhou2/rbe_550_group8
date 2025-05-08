@@ -27,7 +27,8 @@ def plan_bfs(grid, start, goal, boxes, obstacles, max_depth=50):
     Solve Sokoban on Ice using BFS search
     
     Returns:
-        (robot_path, box_paths, nodes_expanded) if solution found, else None
+        (robot_path, box_paths, nodes_expanded, all_states) if solution found, else None
+        where all_states is a dictionary mapping state hashes to states for visualization
     """
     print(f"Starting BFS search from {start} to {goal} with {len(boxes)} boxes")
     start_time = time.time()
@@ -47,6 +48,10 @@ def plan_bfs(grid, start, goal, boxes, obstacles, max_depth=50):
     
     # Visited states set
     visited = set([hash(initial_state)])
+    
+    # Dictionary to store all explored states for visualization
+    # Key is state hash, value is the state object
+    all_states = {hash(initial_state): initial_state}
     
     # Count expanded nodes
     nodes_expanded = 0
@@ -124,10 +129,10 @@ def plan_bfs(grid, start, goal, boxes, obstacles, max_depth=50):
             elapsed = time.time() - start_time
             print(f"Solution found at depth {state.depth} after exploring {nodes_expanded} nodes")
             print(f"Time taken: {elapsed:.8f} seconds")
-            
+            print(f"Total states tracked in dictionary: {len(all_states)}")
             # Reconstruct path
             robot_path, box_paths = reconstruct_path(state)
-            return robot_path, box_paths, nodes_expanded
+            return robot_path, box_paths, nodes_expanded, all_states
         
         # Check if we've reached the maximum depth
         if state.depth >= max_depth:
@@ -154,6 +159,8 @@ def plan_bfs(grid, start, goal, boxes, obstacles, max_depth=50):
                 if new_hash not in visited:
                     visited.add(new_hash)
                     queue.append(new_state)
+                    # Store state for visualization
+                    all_states[new_hash] = new_state
             except Exception as e:
                 print(f"Error simulating move: {e}")
                 continue

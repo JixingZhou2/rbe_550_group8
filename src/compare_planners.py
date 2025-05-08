@@ -1,10 +1,12 @@
 # compare_planners.py
 import time
+import os
 from sat_encoding import encode_sat_plan
 from sat_planner import plan_sat
-from search_planner import plan_bfs
+from search_planner import plan_bfs, State
 from visualize_sat import visualize_path_sat
 from visualize_bfs import visualize_path_bfs
+from real_search_tree_visualizer import visualize_real_bfs_tree
 
 def load_map(filename):
     with open(filename, 'r') as f:
@@ -59,7 +61,24 @@ def compare_planners(map_file, max_t=20):
     bfs_time = time.time() - bfs_start_time
     
     if bfs_result:
-        robot_path, box_paths, nodes_expanded = bfs_result
+        # Check if we received the additional all_states parameter
+        if len(bfs_result) == 4:
+            robot_path, box_paths, nodes_expanded, all_states = bfs_result
+            # Find the goal state by tracing back from the last position
+            goal_state = None
+            for state_hash, state in all_states.items():
+                if state.robot_pos == goal and state.depth == len(robot_path) - 1:
+                    goal_state = state
+                    break
+            
+            # If we found the goal state, visualize the real BFS tree
+            if goal_state:
+                visualize_real_bfs_tree(all_states, goal_state, grid)
+                print(f"Real BFS tree visualization created with {len(all_states)} actual nodes")
+        else:
+            # Compatibility with older versions
+            robot_path, box_paths, nodes_expanded = bfs_result
+            all_states = None
         
         print(f"BFS solution found")
         print(f"Path length: {len(robot_path)}")
@@ -85,14 +104,14 @@ def compare_planners(map_file, max_t=20):
     
     # Now run SAT planner
     print("\n===== SAT-Based Planning =====")
-    print("\nPlanner still running, it may takes about 10 minutes...\n")
+    print("\nPlanner still running, it may take about 10 minutes...\n")
     sat_start_time = time.time()
     sat_horizon = -1
     
     for t in range(1, max_t):
         print(f"Trying SAT with horizon t={t}...")
         solver, RobotAt, BoxAt = encode_sat_plan(grid, start, goal, boxes, obstacles, t)
-        sat_result = plan_sat(solver, RobotAt, BoxAt, t, (len(grid), len(grid[0])), len(boxes),grid)
+        sat_result = plan_sat(solver, RobotAt, BoxAt, t, (len(grid), len(grid[0])), len(boxes), grid)
         
         if sat_result:
             robot_path, box_paths = sat_result
@@ -129,7 +148,6 @@ def compare_planners(map_file, max_t=20):
     print(f"BFS      {results['bfs']['solved']:<8} {results['bfs']['time']:<10.8f} {results['bfs']['path_length']:<12} {results['bfs']['nodes']:<15}")
     print(f"SAT      {results['sat']['solved']:<8} {results['sat']['time']:<10.8f} {results['sat']['path_length']:<12} {sat_horizon if sat_horizon >= 0 else 'N/A':<15}")
     
-    # Analysis
     # Analysis
     if results['sat']['solved'] and results['bfs']['solved']:
         print("\n===== Analysis =====")

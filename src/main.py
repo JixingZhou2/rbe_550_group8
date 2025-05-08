@@ -10,7 +10,7 @@ if __name__ == "__main__":
     maps_dir = os.path.join(parent_dir, "maps")
     
     # Set default map path and handle command line arguments
-    default_map = os.path.join(maps_dir, "scene1.txt")
+    default_map = os.path.join(maps_dir, "scene2.txt")
     
     # If user provided a map path without full path, assume it's relative to maps_dir
     map_file = sys.argv[1] if len(sys.argv) > 1 else default_map
